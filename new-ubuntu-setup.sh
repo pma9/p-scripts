@@ -2,26 +2,28 @@
 
 set -eu
 
-if [ -z "$1" ]; then
-    echo "Enter user to run this script as i.e. './new-ubuntu-setup.sh <user>'"
-fi
-
-
 if [[ $(id -u) == 0 ]]; then
+    if [ -z "$1" ]; then
+        echo "As root user you can run this script to create a new user './new-ubuntu-setup.sh <user>'"
+        exit 1
+    fi
+
     if id "$1" &>/dev/null; then
         echo "User $1 already exists"
         echo "Do NOT run this script as root!" 
         echo "If logged in as root, switch to $1 with 'su - $1'"
     else
-        adduser $1
+        adduser $1 --gecos ""
         adduser $1 sudo
         echo "Created the user $1 and added to sudo group"
 
-        cp /root/.ssh/authorized_keys /home/$1/.ssh
+        sudo -u $1 mkdir /home/$1/.ssh
+        sudo -u $1 cp /root/.ssh/authorized_keys /home/$1/.ssh
         echo "Copied authorized_keys to new user"
 
-        mkdir -p /home/$1/projects
+        sudo -u $1 mkdir -p /home/$1/projects
         mv /root/p-scripts /home/$1/projects
+        chown -R $1:$1 /home/$1/projects/p-scripts
         echo "Moved p-scripts to /home/$1/projects"
 
         echo "To continue please switch to new user $1 with 'su - $1' first"
@@ -69,7 +71,7 @@ do
   read -p "Do you want to install Docker? [y/n] " answer
 
   case $answer in
-   [yY]* )  sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
+   [yY]* )  sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release -y
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
             echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
             sudo apt update && sudo apt install docker-ce docker-ce-cli containerd.io -y
@@ -137,7 +139,8 @@ else
     echo "Oh My ZSH already installed"
 fi
 
-$ZSH_CUSTOM=$HOME/.oh-my-zsh-custom
+mkdir $HOME/.oh-my-zsh-custom
+export ZSH_CUSTOM=$HOME/.oh-my-zsh-custom
 
 echo "########################################"
 echo "Installing powerlevel10k"
