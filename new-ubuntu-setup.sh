@@ -2,9 +2,32 @@
 
 set -eu
 
+if [ -z "$1" ]; then
+    echo "Enter user to run this script as i.e. './new-ubuntu-setup.sh <user>'"
+fi
+
+
 if [[ $(id -u) == 0 ]]; then
-    echo "Do NOT run this script as root!"
-    echo "Use 'sudo -u <username> <path to this script>/new-ubuntu-setup.sh"
+    if id "$1" &>/dev/null; then
+        echo "User $1 already exists"
+        echo "Do NOT run this script as root!" 
+        echo "If logged in as root, switch to $1 with 'su - $1'"
+    else
+        adduser $1
+        adduser $1 sudo
+        echo "Created the user $1 and added to sudo group"
+
+        cp /root/.ssh/authorized_keys /home/$1/.ssh
+        echo "Copied authorized_keys to new user"
+
+        mkdir -p /home/$1/projects
+        mv /root/p-scripts /home/$1/projects
+        echo "Moved p-scripts to /home/$1/projects"
+
+        echo "To continue please switch to new user $1 with 'su - $1' first"
+    fi
+
+    echo "Then use 'sudo -u <username> <path to this script>/new-ubuntu-setup.sh'"
     exit 1
 fi
 
