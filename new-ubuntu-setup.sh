@@ -168,14 +168,14 @@ git clone --bare git@github.com:pma9/my-config.git $HOME/.my-config
 function myconfig {
    /usr/bin/git --git-dir=$HOME/.my-config/ --work-tree=$HOME $@
 }
-myconfig checkout
-if [ $? = 0 ]; then
+myconfig checkout && status=0 || status=1
+if [ $status = 0 ]; then
     echo "Checked out my-config";
 else
     echo "Backing up pre-existing dot files."
     mkdir -p $HOME/.my-config-backup
     # Prefix $HOME not tested yet
-    myconfig checkout 2>&1 | egrep "\s+\." | awk {'print "$HOME"/$1'} | xargs -I{} mv {} .my-config-backup/{}
+    myconfig checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} $HOME/.my-config-backup/{}
     myconfig checkout
 fi;
 myconfig config --local status.showUntrackedFiles no
