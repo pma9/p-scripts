@@ -25,7 +25,7 @@ header_print() {
 ########################################
 if [[ $(id -u) == 0 ]]; then
     if [ -z "$1" ]; then
-        info_print "As root user you can run this script to create a new user './new-ubuntu-setup.sh <user>'"
+        info_print "As root user you can run this script to create a new user './ubuntu-server-setup.sh <user>'"
         exit 1
     fi
 
@@ -50,7 +50,7 @@ if [[ $(id -u) == 0 ]]; then
         info_print "To continue please switch to new user $1 with 'su - $1' first"
     fi
 
-    info_print "Then use 'sudo -u <username> <path to this script>/new-ubuntu-setup.sh'"
+    info_print "Then use 'sudo -u <username> <path to this script>/ubuntu-server-setup.sh'"
     exit 1
 fi
 
